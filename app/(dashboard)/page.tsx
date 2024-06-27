@@ -1,13 +1,13 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
-import { EmptyOrg } from "./_components/emptyOrg";
-import { BoardList } from "./_components/boardList";
+import { EmptyOrg } from "./_components/empty-org";
+import { BoardList } from "./_components/board-list";
 
 interface DashboardPageProps {
   searchParams: {
     search?: string;
-    favourites?: string;
+    favorites?: string;
   };
 }
 
@@ -19,7 +19,10 @@ export default function DashboardPage({ searchParams }: DashboardPageProps) {
       {!organization ? (
         <EmptyOrg />
       ) : (
-        <BoardList orgId={organization.id} query={searchParams} />
+        <BoardList 
+        orgId={organization.id} 
+        query={searchParams} 
+        />
       )}
     </div>
   );
