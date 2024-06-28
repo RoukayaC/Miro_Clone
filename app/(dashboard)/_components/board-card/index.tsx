@@ -34,32 +34,31 @@ export const BoardCard = ({
   orgId,
   isFavorite,
 }: BoardCardProps) => {
+  const { mutate: favorite, pending: pendingFavorite } = useApiMutation(
+    api.board.favorite
+  );
+  const { mutate: unfavorite, pending: pendingUnFavorite } = useApiMutation(
+    api.board.unfavorite
+  );
+
   const { userId } = useAuth();
   const authorLabel = userId === authorId ? "You" : authorName;
   const createdAtLabel = formatDistanceToNow(createdAt, {
     addSuffix: true,
   });
 
-  const handleFavorite= useMutation(api.board.favorite);
-  const { mutate: onFavorite, pending: pendingFavorite } = useApiMutation(
-    api.board.favorite
-  );
-
-  const { mutate: onUnFavorite, pending: pendingUnFavorite } = useApiMutation(
-    api.board.unfavorite
-  );
-
   const toggleFavorite = () => {
     if (isFavorite) {
-      onUnFavorite({ id }).catch(() =>
+      unfavorite({ id: id as Id<"boards"> }).catch(() =>
         toast.error("Failed to unfavorite board")
       );
     } else {
-      handleFavorite({ id: id as Id<"boards">, orgId }).catch(() =>
+      favorite({ id: id as Id<"boards">, orgId }).catch(() =>
         toast.error("Failed to favorite board")
       );
     }
   };
+
   return (
     <Link href={`/boards/${id}`}>
       <div className="group aspect-[100/127] border rounded-lg flex flex-col justify-center overflow-hidden">
