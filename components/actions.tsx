@@ -3,7 +3,7 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useApiMutation } from "@/hooks/use-api-mutation";
-//import { useRenameModal } from "@/store/useRenameModal";
+import { useRenameModal } from "@/store/use-rename-modal";
 import type { DropdownMenuContentProps } from "@radix-ui/react-dropdown-menu";
 import { Link2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -31,17 +31,18 @@ export function Actions({
   id,
   title,
 }: ActionsProp) {
+  const { onOpen } = useRenameModal();
+  const { mutate, pending } = useApiMutation(api.board.remove);
+
   const onCopyLink = () => {
     navigator.clipboard
-      .writeText(`${window.location.origin}/board/${id}`)
+      .writeText(`${window.location.origin}/boards/${id}`)
       .then(() => toast.success("Link copied!"))
       .catch(() => toast.error("Failed to copy link"));
   };
-  // const { onOpen } = useRenameModal();
-  const { mutate, pending } = useApiMutation(api.board.remove);
 
   const onDelete = () => {
-    mutate({ id })
+    mutate({ id: id as Id<"boards"> })
       .then(() => toast.success("Board deleted!"))
       .catch(() => toast.error("Failed to delete board"));
   };
@@ -55,19 +56,20 @@ export function Actions({
         sideOffset={sideOffset}
         className="w-60"
       >
-        <DropdownMenuItem className="p-3 cursor-pointer" onClick={onCopyLink}>
+        <DropdownMenuItem
+          className="p-3 cursor-pointer"
+          onClick={onCopyLink}
+        >
           <Link2 className="h-4 w-4 mr-2" />
           Copy board link
         </DropdownMenuItem>
-
         <DropdownMenuItem
           className="p-3 cursor-pointer"
-          onClick={() => open(id, title)}
+          onClick={() => onOpen(id, title)}
         >
           <Pencil className="h-4 w-4 mr-2" />
           Rename
         </DropdownMenuItem>
-
         <ConfirmModal
           header="Delete board?"
           description="This will delete the board and all of its content"

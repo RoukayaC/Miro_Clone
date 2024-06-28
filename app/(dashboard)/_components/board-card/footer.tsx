@@ -18,9 +18,10 @@ export function Footer({
   onClick,
   disabled,
 }: FooterProps) {
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const handleClick = (
+    event: React.MouseEvent<HTMLButtonElement , MouseEvent>) => {
+    event.stopPropagation();
+    event.preventDefault();
     onClick();
   };
 
