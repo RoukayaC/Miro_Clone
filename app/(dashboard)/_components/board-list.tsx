@@ -18,8 +18,8 @@ interface BoardListProps {
 export const BoardList = ({ orgId, query }: BoardListProps) => {
   const data = useQuery(api.boards.get, {
     orgId,
-    // search: query.search,
-    // favorites: query.favorites,
+    search: query.search,
+    favorites: query.favorites,
   });
 
   if (data === undefined) {

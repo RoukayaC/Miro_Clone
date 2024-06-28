@@ -34,7 +34,9 @@ export const BoardCard = ({
   orgId,
   isFavorite,
 }: BoardCardProps) => {
-  const { mutate: favorite, pending: pendingFavorite } = useApiMutation(
+
+
+  const { mutate: favorite, pending: pendingFavorite  } = useApiMutation(
     api.board.favorite
   );
   const { mutate: unfavorite, pending: pendingUnFavorite } = useApiMutation(
@@ -46,6 +48,7 @@ export const BoardCard = ({
   const createdAtLabel = formatDistanceToNow(createdAt, {
     addSuffix: true,
   });
+
 
   const toggleFavorite = () => {
     if (isFavorite) {
@@ -73,11 +76,11 @@ export const BoardCard = ({
         </div>
 
         <Footer
-          isFavorite={isFavorite}
-          title={title}
-          authorLabel={authorLabel}
-          createdAtLabel={createdAtLabel}
-          onClick={toggleFavorite}
+           isFavorite={isFavorite}
+           title={title}
+           authorLabel={authorLabel}
+           createdAtLabel={createdAtLabel}
+           onClick={toggleFavorite}
           disabled={pendingFavorite || pendingUnFavorite}
         />
       </div>
