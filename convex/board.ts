@@ -14,7 +14,6 @@ const images = [
   "/placeholders/10.svg",
 ];
 
-//CREATE
 export const create = mutation({
   args: {
     orgId: v.string(),
@@ -30,8 +29,8 @@ export const create = mutation({
     const randomImage = images[Math.floor(Math.random() * images.length)];
 
     const board = await ctx.db.insert("boards", {
-      title: args.title,
       orgId: args.orgId,
+      title: args.title,
       authorId: identity.subject,
       authorName: identity.name!,
       imageUrl: randomImage,
@@ -41,7 +40,6 @@ export const create = mutation({
   },
 });
 
-//REMOVE
 export const remove = mutation({
   args: {
     id: v.id("boards"),
@@ -52,12 +50,24 @@ export const remove = mutation({
     if (!identity) {
       throw new Error("Unauthorized");
     }
-    // todo: later check to delete fav relation
+
+    const userId = identity.subject;
+
+    const existingFavorite = await ctx.db
+      .query("userFavorites")
+      .withIndex("by_user_board", (q) =>
+        q.eq("userId", userId).eq("boardId", args.id)
+      )
+      .unique();
+
+    if (existingFavorite) {
+      await ctx.db.delete(existingFavorite._id);
+    }
+
     await ctx.db.delete(args.id);
   },
 });
 
-//UPDATE
 export const update = mutation({
   args: {
     id: v.id("boards"),
@@ -88,7 +98,6 @@ export const update = mutation({
   },
 });
 
-//FAVORITE
 export const favorite = mutation({
   args: { id: v.id("boards"), orgId: v.string() },
   handler: async (ctx, args) => {
@@ -127,7 +136,6 @@ export const favorite = mutation({
   },
 });
 
-//UNFAVORITE
 export const unfavorite = mutation({
   args: { id: v.id("boards") },
   handler: async (ctx, args) => {
@@ -147,10 +155,8 @@ export const unfavorite = mutation({
 
     const existingFavorite = await ctx.db
       .query("userFavorites")
-      .withIndex(
-        "by_user_board",
-        (q) => q.eq("userId", userId).eq("boardId", board._id)
-        //todo check if orgId needed
+      .withIndex("by_user_board", (q) =>
+        q.eq("userId", userId).eq("boardId", board._id)
       )
       .unique();
 
@@ -165,11 +171,14 @@ export const unfavorite = mutation({
 });
 
 export const get = query({
-  args: {
-    id: v.id("boards"),
-  },
+  args: { id: v.id("boards") },
   handler: async (ctx, args) => {
-    const board = ctx.db.get(args.id);
+    const board = await ctx.db.get(args.id);
+
+    if (!board) {
+      throw new Error("Board not found");
+    }
+
     return board;
   },
 });
