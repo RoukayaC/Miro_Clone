@@ -9,6 +9,7 @@ import {
 import { createRoomContext } from "@liveblocks/react";
 
 const client = createClient({
+  throttle: 60,
   authEndpoint: "/api/liveblocks-auth",
 });
 
