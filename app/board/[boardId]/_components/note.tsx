@@ -2,7 +2,7 @@ import { cn, colorToCss, getContrastingTextColor } from "@/lib/utils";
 import { useMutation } from "@/liveblocks.config";
 import { NoteLayer } from "@/types/canvas";
 import { Kalam } from "next/font/google";
-import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
+
 
 const font = Kalam({
   subsets: ["latin"],
@@ -39,9 +39,7 @@ export const Note = ({
     liveLayers.get(id)?.set("value", newValue);
   }, []);
 
-  const hanldeContentChange = (e: ContentEditableEvent) => {
-    updateValue(e.target.value);
-  };
+ 
 
   return (
     <foreignObject
@@ -56,18 +54,6 @@ export const Note = ({
       }}
       className="shadow-md drop-shadow-xl"
     >
-      <ContentEditable
-        html={value || "Text"}
-        onChange={hanldeContentChange}
-        className={cn(
-          "h-full w-full flex items-center justify-center outline-none",
-          font.className
-        )}
-        style={{
-          color: fill ? getContrastingTextColor(fill) : "#000",
-          fontSize: calculateFontSize(width, height),
-        }}
-      />
     </foreignObject>
   );
 };

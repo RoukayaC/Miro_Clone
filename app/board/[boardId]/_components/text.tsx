@@ -2,7 +2,6 @@ import { cn, colorToCss } from "@/lib/utils";
 import { useMutation } from "@/liveblocks.config";
 import { TextLayer } from "@/types/canvas";
 import { Kalam } from "next/font/google";
-import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 
 const font = Kalam({
   subsets: ["latin"],
@@ -39,9 +38,7 @@ export const Text = ({
     liveLayers.get(id)?.set("value", newValue);
   }, []);
 
-  const hanldeContentChange = (e: ContentEditableEvent) => {
-    updateValue(e.target.value);
-  };
+
 
   return (
     <foreignObject
@@ -54,18 +51,7 @@ export const Text = ({
         outline: selectionColor ? `1px solid ${selectionColor}` : "none",
       }}
     >
-      <ContentEditable
-        html={value || "Text"}
-        onChange={hanldeContentChange}
-        className={cn(
-          "h-full w-full flex items-center justify-center drop-shadow-md outline-none",
-          font.className
-        )}
-        style={{
-          color: fill ? colorToCss(fill) : "#000",
-          fontSize: calculateFontSize(width, height),
-        }}
-      />
+      
     </foreignObject>
   );
 };

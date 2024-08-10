@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Camera,
   CanvasMode,
@@ -13,7 +13,7 @@ import { Participants } from "./participants";
 import { Toolbar } from "./toolbar";
 import { useHistory, useCanRedo, useCanUndo } from "@/liveblocks.config";
 import { CursorsPresence } from "./cursors-presence";
-import { useMutation } from "@liveblocks/react";
+import { useMutation, useStorage } from "@liveblocks/react";
 import { pointerEventToCanvasPointer } from "@/lib/utils";
 import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/client";
@@ -23,7 +23,7 @@ interface CanvasProps {
   boardId: string;
 }
 export const Canvas = ({ boardId }: CanvasProps) => {
-  const layerIds = useMyStorage((root) => root.layerIds);
+  const layerIds = useStorage((root) => root.layerIds);
 
   const [canvasState, setCanvasState] = useState<CanvasState>({
     mode: CanvasMode.None,
@@ -39,8 +39,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
   const canUndo = useCanUndo();
   const canRedo = useCanRedo();
 
-  const insertLayer = useMutation(
-    (
+  const insertLayer = useMutation((
       { storage, setMyPresence },
       layerType:
         | LayerType.Ellipse
@@ -97,8 +96,12 @@ export const Canvas = ({ boardId }: CanvasProps) => {
   }, []);
 
   const onPointerUp = useMutation(
-    ({}, e) => {
+    (
+      {},
+       e
+      ) => {
       const point = pointerEventToCanvasPointer(e, camera);
+
       if (canvasState.mode === CanvasMode.Inserting) {
         insertLayer(canvasState.layerType, point);
       } else {
@@ -132,19 +135,16 @@ export const Canvas = ({ boardId }: CanvasProps) => {
         onPointerLeave={onPointerLeave}
         onPointerUp={onPointerUp}
       >
-        <g
-          style={{
-            transform: `translate(${camera.x}px, ${camera.y}px)`,
-          }}
-        >
-          {layerIds.map((layerId) => (
-            <LayerPreview
-              key={layerId}
-              id={layerId}
-              onLayerPointerDown={() => {}}
-              selectionColor="#000"
-            />
-          ))}
+        <g style={{ transform: `translate(${camera.x}px, ${camera.y}px)` }}>
+          {Array.isArray(layerIds) &&
+            layerIds.map((layerId) => (
+              <LayerPreview
+                key={layerId}
+                id={layerId}
+                onLayerPointerDown={() => {}}
+                selectionColor="#000"
+              />
+            ))}
           <CursorsPresence />
         </g>
       </svg>
@@ -152,6 +152,4 @@ export const Canvas = ({ boardId }: CanvasProps) => {
   );
 };
 
-function useMyStorage(arg0: (s: any) => any) {
-  //throw new Error("Function not implemented.");
-}
+
