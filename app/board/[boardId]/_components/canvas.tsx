@@ -7,6 +7,8 @@ import {
   Color,
   LayerType,
   Point,
+  Side,
+  XYWH,
 } from "@/types/canvas";
 import { Info } from "./info";
 import { Participants } from "./participants";
@@ -79,6 +81,18 @@ export const Canvas = ({ boardId }: CanvasProps) => {
     [lastUsedColor]
   );
 
+  const onResizeHandlePointerDown = useCallback(
+    (corner: Side, initialBounds: XYWH) => {
+      history.pause();
+      setCanvasState({
+        mode: CanvasMode.Resizing,
+        initialBounds,
+        corner,
+      });
+    },
+    [history]
+  );
+
   const onWheel = useCallback((e: React.WheelEvent) => {
     setCamera((camera) => ({
       x: camera.x - e.deltaX,
@@ -146,8 +160,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
     const layerIdsToColorSelection: Record<string, string> = {};
     for (const [connectionId, selection] of selections) {
       for (const layerId of selection) {
-        layerIdsToColorSelection[layerId] =
-          connectionIdToColor(connectionId);
+        layerIdsToColorSelection[layerId] = connectionIdToColor(connectionId);
       }
     }
     return layerIdsToColorSelection;
@@ -183,9 +196,10 @@ export const Canvas = ({ boardId }: CanvasProps) => {
                 selectionColor={layerIdsToColorSelections[layerId]}
               />
             ))}
-            <SelectionBox
-            onResizeHandlePointerDown={() => {}}
-            />
+          <SelectionBox 
+          onResizeHandlePointerDown={onResizeHandlePointerDown} 
+          
+          />
           <CursorsPresence />
         </g>
       </svg>
