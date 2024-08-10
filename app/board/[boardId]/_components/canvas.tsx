@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import {
   Camera,
   CanvasMode,
@@ -13,15 +13,19 @@ import { Participants } from "./participants";
 import { Toolbar } from "./toolbar";
 import { useHistory, useCanRedo, useCanUndo } from "@/liveblocks.config";
 import { CursorsPresence } from "./cursors-presence";
-import { useMutation, useStorage } from "@liveblocks/react";
-import { pointerEventToCanvasPointer } from "@/lib/utils";
+import { useMutation, useOthersMapped, useStorage } from "@liveblocks/react";
+import { connectionIdToColor, pointerEventToCanvasPointer } from "@/lib/utils";
 import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/client";
 import { LayerPreview } from "./layer-preview";
+import { SelectionBox } from "./selection-box";
+
 const MAX_LAYERS = 100;
+
 interface CanvasProps {
   boardId: string;
 }
+
 export const Canvas = ({ boardId }: CanvasProps) => {
   const layerIds = useStorage((root) => root.layerIds);
 
@@ -35,11 +39,13 @@ export const Canvas = ({ boardId }: CanvasProps) => {
     g: 0,
     b: 0,
   });
+
   const history = useHistory();
   const canUndo = useCanUndo();
   const canRedo = useCanRedo();
 
-  const insertLayer = useMutation((
+  const insertLayer = useMutation(
+    (
       { storage, setMyPresence },
       layerType:
         | LayerType.Ellipse
@@ -83,12 +89,10 @@ export const Canvas = ({ boardId }: CanvasProps) => {
   const onPointerMove = useMutation(
     ({ setMyPresence }, e: React.PointerEvent) => {
       e.preventDefault();
-
       const current = pointerEventToCanvasPointer(e, camera);
-
       setMyPresence({ cursor: current });
     },
-    []
+    [camera]
   );
 
   const onPointerLeave = useMutation(({ setMyPresence }) => {
@@ -96,10 +100,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
   }, []);
 
   const onPointerUp = useMutation(
-    (
-      {},
-       e
-      ) => {
+    ({}, e) => {
       const point = pointerEventToCanvasPointer(e, camera);
 
       if (canvasState.mode === CanvasMode.Inserting) {
@@ -114,6 +115,43 @@ export const Canvas = ({ boardId }: CanvasProps) => {
     },
     [camera, canvasState, history, insertLayer]
   );
+
+  const selections = useOthersMapped((other) => other.presence.selection);
+
+  const onLayerPointerDown = useMutation(
+    ({ setMyPresence }, e: React.PointerEvent, layerId: string) => {
+      if (
+        canvasState.mode === CanvasMode.Pencil ||
+        canvasState.mode === CanvasMode.Inserting
+      ) {
+        return;
+      }
+
+      history.pause();
+      e.stopPropagation();
+
+      const point = pointerEventToCanvasPointer(e, camera);
+      if (!selections.find(([_, s]) => s.includes(layerId))) {
+        setMyPresence({ selection: [layerId] }, { addToHistory: true });
+      }
+      setCanvasState({
+        mode: CanvasMode.Translating,
+        current: point,
+      });
+    },
+    [camera, canvasState.mode, selections, history]
+  );
+
+  const layerIdsToColorSelections = useMemo(() => {
+    const layerIdsToColorSelection: Record<string, string> = {};
+    for (const [connectionId, selection] of selections) {
+      for (const layerId of selection) {
+        layerIdsToColorSelection[layerId] =
+          connectionIdToColor(connectionId);
+      }
+    }
+    return layerIdsToColorSelection;
+  }, [selections]);
 
   return (
     <main className="h-full w-full relative bg-neutral-100 touch-none">
@@ -141,15 +179,16 @@ export const Canvas = ({ boardId }: CanvasProps) => {
               <LayerPreview
                 key={layerId}
                 id={layerId}
-                onLayerPointerDown={() => {}}
-                selectionColor="#000"
+                onLayerPointerDown={onLayerPointerDown}
+                selectionColor={layerIdsToColorSelections[layerId]}
               />
             ))}
+            <SelectionBox
+            onResizeHandlePointerDown={() => {}}
+            />
           <CursorsPresence />
         </g>
       </svg>
     </main>
   );
 };
-
-
