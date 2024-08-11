@@ -10,17 +10,12 @@ import { memo } from "react";
 interface SelectionToolsProps {
   camera: Camera;
   setLastUsedColor: (color: Color) => void;
+}
 
-};
+export const SelectionTools = memo(
+  ({ camera, setLastUsedColor }: SelectionToolsProps) => {
+    return <div>SelectionTools</div>;
+  }
+);
 
-
-export const SelectionTools = memo(({
-  camera,
-  setLastUsedColor,
-}:SelectionToolsProps) => {
-  return (
-    <div>
-      SelectionTools
-    </div>
-  )
-});
+SelectionTools.displayName = "SelectionTools";
