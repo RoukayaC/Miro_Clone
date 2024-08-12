@@ -1,3 +1,4 @@
+import { Pencil } from 'lucide-react';
 // Define Liveblocks types for your application
 // https://liveblocks.io/docs/api-reference/liveblocks-react#Typing-your-data
 import {
@@ -17,9 +18,12 @@ declare global {
   interface Liveblocks {
     // Each user's Presence, for useMyPresence, useOthers, etc.
     Presence: {
+      pencilColor: any;
       // Example, real-time cursor coordinates
       cursor: { x: number; y: number } | null;
       selection: string[];
+      pencilDraft: [x: number, y:number, pressure:number ] [] | null;
+      penColor:Color | null;
     };
 
     // The Storage tree for the room, for useMutation, useStorage, etc.
