@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Hint } from "@/components/hint";
